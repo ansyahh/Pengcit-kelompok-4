@@ -348,7 +348,7 @@ def opening():
 
         # Deteksi wajah dan tempelkan kacamata
         result_image = BytesIO()
-        plt.imsave(result_image, opening, format='png', cmap=plt.cm.gray)
+        plt.imsave(result_image, opening, format='jpg', cmap=plt.cm.gray)
         result_image.seek(0)
         filter_path = os.path.join(app.config['UPLOAD'], 'opening.jpg')
         with open(os.path.join(app.config['UPLOAD'], 'opening.jpg'), 'wb') as f:
@@ -372,17 +372,14 @@ def closing():
         file_path = os.path.join(app.config['UPLOAD'], filename)
         file.save(file_path)
         
-        img = cv2.imread(file_path, 0)
+        img = cv2.imread(file_path, 1)
 
-        img = cv2.threshold(img, 0, 255, 
-                     cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
-        
-        kernel = np.ones((3, 3), np.uint8)
+        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5))
         closing = cv2.morphologyEx(img,cv2.MORPH_CLOSE,kernel)
 
         # Deteksi wajah dan tempelkan kacamata
         result_image = BytesIO()
-        plt.imsave(result_image, closing, format='png', cmap=plt.cm.gray)
+        plt.imsave(result_image, closing, format='jpg', cmap=plt.cm.gray)
         result_image.seek(0)
         filter_path = os.path.join(app.config['UPLOAD'], 'closing.jpg')
         with open(os.path.join(app.config['UPLOAD'], 'closing.jpg'), 'wb') as f:
