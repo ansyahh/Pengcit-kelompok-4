@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Face Blur</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            text-align: center;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        form {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+        input[type="file"] {
+            margin-bottom: 10px;
+        }
+        button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            float: right;
+        }
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            margin: 20px auto;
+            text-align: center;
+        }
+        .output img {
+            max-width: 200px;
+            display: block;
+            margin: 0 auto; /* Posisikan gambar di tengah */
+        }
+        .small-img {
+            max-width: 300px; /* Perkecil lebar gambar */
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="text-lg bg-gray-700 font-Poppins">
+    <nav class="flex w-full flex-wrap items-center justify-between bg-black text-white py-3 shadow-lg mb-10 sticky top-0">
+        <div class="flex w-full flex-wrap items-center justify-between px-6 py-6 lg:px-6">
+            <a href="{{ url_for('home') }}">
+                <button>
+                    <h3 class="font-bold text-3xl">Project Pengolahan Citra</h3>
+                </button>
+            </a>
+            <h3 class="font-bold text-3xl">Kelompok 4</h3>
+        </div>
+    </nav>
+    
+    <h1>Face Blur</h1>
+    <form action="{{ url_for('face_blur') }}" enctype="multipart/form-data" method="POST">
+        <div class="mx-10">
+            <label for="formFile" class="mb-2 inline-block text-black text-xl">Input Image</label>
+
+            <div class="flex">
+                <input name="img" id="img" accept=".jpg, .jpeg, .png" type="file" class="m-0 block w-full min-w-0 flex-auto cursor-pointer rounded-lg  bg-clip-padding  py-[0.32rem] font-normal leading-[2.15] bg-gray-200 text-black transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:cursor-pointer file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-neutral-100 file:px-3 file:py-[0.32rem] file:text-neutral-700 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-neutral-200 focus:border-primary focus:text-neutral-700 focus:shadow-te-primary focus:outline-none dark:border-neutral-600">
+                <input type="submit" class="inline-flex items-center justify-center px-10 py-2 text-base font-medium leading-6 text-white whitespace-no-wrap bg-stone-700 border-stone-800 rounded-md shadow-[0_4px_9px_-4px_#a8a29e] hover:bg-stone-800 ml-4 hover:shadow-[0_8px_9px_-4px_#a8a29e,0_4px_18px_0_#a8a29e]">
+            </div>
+
+            <label for="blur-slider" class="mb-2 inline-block text-black text-xl mt-4">Blur Level</label>
+            <input type="range" name="tingkatan" min="1" max="100" value="1" id="tingkatan" step="2" oninput="display(this.value, this.id)">
+            <span style="color: white;">Value: </span>
+            <span id="tingkatan-value" style="color: black;">1</span>
+        </div>
+    </form>
+
+    <section class="mt-20">
+      <div class="flex justify-center">
+          <div class="mr-10">
+              {% if img %}
+              <h4 class="text-center font-medium text-xl text-white mb-6">Original Image</h4>
+              <img src="{{ img }}" alt="Original Image" class="w-[500px]" id="original-img">
+              {% endif %}
+          </div>
+  
+          <div class="flex justify-center">
+              <div class="mr-10">
+                  {% if img2 %}
+                  <h4 class="text-center font-medium text-xl text-white mb-6">Blurred Image</h4>
+                  <img src="{{ img2 }}" alt="Blurred Image" class="w-[500px]" id="blurred-img">
+                  {% endif %}
+              </div>
+          </div>
+      </div>
+  </section>
+
+  <script>
+    // Fungsi untuk menampilkan nilai pada indikator blur
+    function display(value, id) {
+        document.getElementById(id + "-value").textContent = value;
+    }
+
+    // Mendengarkan perubahan pada slider dan memanggil fungsi display
+    const blurSlider = document.getElementById("tingkatan");
+    blurSlider.addEventListener("input", function() {
+        const blurValue = blurSlider.value;
+        display(blurValue, "tingkatan");
+    });
+</script>
+
+</body>
+</html>

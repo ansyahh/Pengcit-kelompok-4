@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Histogram Equalization</title>
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    
+  <body class="text-lg bg-gray-900 font-Poppins">
+    
+    <nav
+      class=" flex w-full flex-wrap items-center justify-between bg-gray-900 text-gray-500 py-3 shadow-lg mb-10 sticky top-0"
+    >
+      <div
+        class="flex w-full flex-wrap items-center justify-between px-6 py-6 lg:px-6"
+      >
+      
+<button id="dropdownDefaultButton" data-dropdown-toggle="dropdown" class="hover:text-stone-700 hover:bg-white bg-gray-500 text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" type="button">Menu<svg class="w-2.5 h-2.5 ml-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+</svg></button>
+<!-- Dropdown menu -->
+<div id="dropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700">
+  <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="dropdownDefaultButton">
+    <li>
+      <a href="{{ url_for('histogram_equ') }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Histogram Equalization</a>
+    </li>
+    <li>
+      <a href="{{ url_for('edge') }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edge</a>
+    </li>
+    <li>
+      <a href="{{ url_for('face_blur') }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Face Blur</a>
+  </li>
+  <li>
+    <a href="{{ url_for('segment') }}" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Segmentasi</a>
+</li>
+  </ul>
+</div>
+
+  <h3 class=" font-bold text-3xl"> PengCit </h3>
+ 
+    <h4
+  class=" font-bold text-xl"
+    >
+    Kelompok Apa Aja
+    </h4>
+</div>
+</nav>
+
+<section>
+<h2
+class="text-center lg:text-7xl md:text-6xl sm:text-5xl text-4xl font-medium py-16 mx-10 mb-12 bg-black bg-opacity-10 text-white rounded-xl"
+>
+Segmentasi
+</h2>
+
+    <form
+        action="{{ url_for('segment') }}"
+        enctype="multipart/form-data"
+        method="POST"
+        class=""
+    >
+        <div class="mx-10">
+        <label
+            for="formFile"
+            class="mb-2 inline-block text-white text-xl"
+            >Input Image</label
+        >
+
+        <div class="flex">
+            <input
+            name="img"
+            id="img"
+            type="file"
+            class=" m-0 block w-full min-w-0 flex-auto cursor-pointer rounded-lg  bg-clip-padding  py-[0.32rem] font-normal leading-[2.15] bg-gray-200 text-black transition duration-300 ease-in-out file:-mx-3 file:-my-[0.32rem] file:cursor-pointer file:overflow-hidden file:rounded-none file:border-0 file:border-solid file:border-inherit file:bg-neutral-100 file:px-3 file:py-[0.32rem] file:text-neutral-700 file:transition file:duration-150 file:ease-in-out file:[border-inline-end-width:1px] file:[margin-inline-end:0.75rem] hover:file:bg-neutral-200 focus:border-primary focus:text-neutral-700 focus:shadow-te-primary focus:outline-none dark:border-neutral-600"
+            />
+
+            <input
+            type="submit"
+            class="inline-flex items-center justify-center px-10 py-2 text-base font-medium leading-6 text-white whitespace-no-wrap bg-stone-700 border-stone-800 rounded-md shadow-[0_4px_9px_-4px_#a8a29e] hover:bg-stone-800 ml-4 hover:shadow-[0_8px_9px_-4px_#a8a29e,0_4px_18px_0_#a8a29e]"
+            />
+        </div>
+        </div>
+    </form>
+
+    <div class="flex justify-center">
+        <div class="mr-10">
+          {% if img %}
+          <h4 class="text-center font-medium text-2xl text-white mb-6">
+            Gambar Awal
+          </h4>
+          <img src="{{ img }}" class="w-[500px]" />
+          {% endif %}
+        </div>
+
+        <div class="mr-10">
+          {% if img2 %}
+          <h4 class="text-center font-medium text-2xl text-white mb-6">
+            Segmentasi
+          </h4>
+          <img src="{{ img2 }}" class="w-[500px]" />
+          {% endif %}
+        </div>
+      </section>
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.js"></script>
+  
+</body>
+</html>
