@@ -1,18 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Edge Detection</title>
+    <title>Closing</title>
     <link rel="stylesheet" href="/static/css/main.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;700;800&display=swap"
+        rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
             text-align: center;
         }
+
         h1 {
             margin-top: 20px;
             color: white
@@ -21,6 +24,7 @@
         h2 {
             color: white;
         }
+
         form {
             margin: 20px auto;
             padding: 20px;
@@ -29,9 +33,11 @@
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
             text-align: left;
         }
+
         input[type="file"] {
             margin-bottom: 10px;
         }
+
         button[type="submit"] {
             background-color: #007bff;
             color: #fff;
@@ -40,26 +46,39 @@
             cursor: pointer;
             float: right;
         }
+
         button[type="submit"]:hover {
             background-color: #0056b3;
         }
+
         .output {
             margin: 20px auto;
             text-align: center;
         }
+
         .output img {
-            max-width: 200px;
-            display: block;
-            margin: 0 auto; /* Posisikan gambar di tengah */
+            margin: 20px auto;
         }
+
         .small-img {
-            max-width: 300px; /* Perkecil lebar gambar */
+            max-width: 300px;
+        }
+
+        .histogram {
             text-align: center;
+        }
+
+        .histogram img {
+            max-width: 100%;
+            display: block;
+            margin: 0 auto;
         }
     </style>
 </head>
+
 <body class="text-lg bg-gray-700 font-Poppins">
-    <nav class="flex w-full flex-wrap items-center justify-between bg-black text-white py-3 shadow-lg mb-10 sticky top-0">
+    <nav
+        class="flex w-full flex-wrap items-center justify-between bg-black text-white py-3 shadow-lg mb-10 sticky top-0">
         <div class="flex w-full flex-wrap items-center justify-between px-6 py-6 lg:px-6">
             <a href="{{ url_for('home') }}">
                 <button>
@@ -69,24 +88,30 @@
             <h3 class="font-bold text-3xl">Kelompok 4</h3>
         </div>
     </nav>
-    
-    <h1>Edge Detection</h1>
-    <form action="/edge" method="POST" enctype="multipart/form-data">
-        <label for="img">Select an image:</label>
-        <input type="file" name="img" id="img" accept="image/*" required>
-        <button type="submit">Submit</button>
-    </form>
 
-    {% if img %}
-    <div class="output">
-        <h2>Original Image</h2>
-        <img src="{{ img }}" alt="Original Image" class="small-img">
-        
-        <h2>Edge Detected Image</h2>
-        <img src="{{ edge }}" alt="Edge Detected Image">
-    </div>
-    {% endif %}
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.8.1/flowbite.min.js"></script>
-</body>
+    <h1>Morph : Closing</h1>
+
+    <body>
+        <form action="/closing" method="POST" enctype="multipart/form-data">
+            <input type="file" name="img" id="img" accept="image/*" required>
+            <button type="submit">Submit</button>
+        </form>
+
+        <div class="output">
+            <!-- Menampilkan gambar asli -->
+            {% if original %}
+            <h2>Original Image</h2>
+            <img src="{{ original }}" alt="Original Image" width="400">
+            {% endif %}
+
+            {% if closing %}
+            <!-- Menampilkan gambar greyscale -->
+            <h2>Image with closing</h2>
+            <img src="{{ closing }}" alt="Greyscale Image" width="400">
+            {% endif %}
+
+        </div>
+
+    </body>
+
 </html>

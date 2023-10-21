@@ -328,36 +328,72 @@ def filter_face():
         return render_template('filter_face.html', original=file_path, filtered=filter_path)
     return render_template('filter_face.html')
 
-    #     st.title("Face Sticker")
-    #     uploaded_sticker = st.file_uploader("Choose a sticker...", type=["png"])
-    #     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "png", "jpeg"])
+@app.route('/opening', methods=['GET','POST'])
+def opening():
 
-    #     if uploaded_file is not None:
-    #         image = cv2.imdecode(np.fromstring(uploaded_file.read(), np.uint8), 1)
-    #         image_ori = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    original_file = None
+    filtered_file = None
 
-    #         col1, col2 = st.columns(2)
-    #         with col1:
-    #             st.markdown("##### Before Face Sticker")
-    #             st.image(image_ori, use_column_width=True)
+    if request.method == "POST":
+        from io import BytesIO
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+        
+        img = cv2.imread(file_path, 1)
 
-    #         with col2:
-    #             st.markdown("##### After Face Sticker")
-    #             gray_image = cv2.cvtColor(image_ori, cv2.COLOR_BGR2GRAY)
-    #             face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-    #             faces = face_cascade.detectMultiScale(gray_image, 1.3, 5)
-    #             sticker = cv2.imdecode(np.frombuffer(uploaded_sticker.read(), np.uint8), cv2.IMREAD_UNCHANGED)
-    #             sticker = cv2.cvtColor(sticker, cv2.COLOR_BGR2RGBA)
-    #             for (x,y,w,h) in faces:
-    #                 resized_sticker = cv2.resize(sticker, (w,h))
-    #                 for i in range(resized_sticker.shape[0]):
-    #                     for j in range(resized_sticker.shape[1]):
-    #                         if resized_sticker[i,j][3] != 0:
-    #                             image_ori[y+i,x+j] = resized_sticker[i,j][0:3]
-    #             st.image(image_ori, use_column_width=True)
-    #         return render_template('filter_face.html')
+        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5))
+        opening = cv2.morphologyEx(img,cv2.MORPH_OPEN,kernel)
+
+        # Deteksi wajah dan tempelkan kacamata
+        result_image = BytesIO()
+        plt.imsave(result_image, opening, format='png', cmap=plt.cm.gray)
+        result_image.seek(0)
+        filter_path = os.path.join(app.config['UPLOAD'], 'opening.jpg')
+        with open(os.path.join(app.config['UPLOAD'], 'opening.jpg'), 'wb') as f:
+            f.write(result_image.read())
+
+        return render_template('opening.html', original=file_path, opening=filter_path)
+
+    return render_template('opening.html')
 
 
+@app.route('/closing', methods=['GET','POST'])
+def closing():
+
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        from io import BytesIO
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+        
+        img = cv2.imread(file_path, 0)
+
+        img = cv2.threshold(img, 0, 255, 
+                     cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
+        
+        kernel = np.ones((3, 3), np.uint8)
+        closing = cv2.morphologyEx(img,cv2.MORPH_CLOSE,kernel)
+
+        # Deteksi wajah dan tempelkan kacamata
+        result_image = BytesIO()
+        plt.imsave(result_image, closing, format='png', cmap=plt.cm.gray)
+        result_image.seek(0)
+        filter_path = os.path.join(app.config['UPLOAD'], 'closing.jpg')
+        with open(os.path.join(app.config['UPLOAD'], 'closing.jpg'), 'wb') as f:
+            f.write(result_image.read())
+
+        return render_template('closing.html', original=file_path, closing=filter_path)
+
+    return render_template('closing.html')
 #
+
+
+
 if __name__ == '__main__': 
     app.run(debug=True,port=8001)
