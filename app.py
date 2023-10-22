@@ -1,5 +1,4 @@
 from flask import Flask, redirect, render_template, request, url_for, send_file
-import streamlit as st
 import numpy as np
 from werkzeug.utils import secure_filename
 import os
@@ -328,6 +327,66 @@ def filter_face():
         return render_template('filter_face.html', original=file_path, filtered=filter_path)
     return render_template('filter_face.html')
 
+@app.route('/erosion', methods=['GET','POST'])
+def erosion():
+
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        from io import BytesIO
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+        
+        img = cv2.imread(file_path, 1)
+
+        kernel = np.ones((5, 5), 'uint8')
+        erosion = cv2.erode(img, kernel, iterations=1)
+
+        # Deteksi wajah dan tempelkan kacamata
+        result_image = BytesIO()
+        plt.imsave(result_image, erosion, format='jpg', cmap=plt.cm.gray)
+        result_image.seek(0)
+        filter_path = os.path.join(app.config['UPLOAD'], 'erosion.jpg')
+        with open(os.path.join(app.config['UPLOAD'], 'erosion.jpg'), 'wb') as f:
+            f.write(result_image.read())
+
+        return render_template('erosion.html', original=file_path, erosion=filter_path)
+    
+    return render_template('erosion.html')
+
+@app.route('/dilatation', methods=['GET','POST'])
+def dilatation():
+
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        from io import BytesIO
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+        
+        img = cv2.imread(file_path, 1)
+
+        kernel = np.ones((5, 5), 'uint8')
+        dilate_img = cv2.dilate(img, kernel, iterations=1)
+
+        # Deteksi wajah dan tempelkan kacamata
+        result_image = BytesIO()
+        plt.imsave(result_image, dilate_img, format='jpg', cmap=plt.cm.gray)
+        result_image.seek(0)
+        filter_path = os.path.join(app.config['UPLOAD'], 'dilatation.jpg')
+        with open(os.path.join(app.config['UPLOAD'], 'dilatation.jpg'), 'wb') as f:
+            f.write(result_image.read())
+
+        return render_template('dilatation.html', original=file_path, dilatation=filter_path)
+    
+    return render_template('dilatation.html')
+
 @app.route('/opening', methods=['GET','POST'])
 def opening():
 
@@ -388,7 +447,8 @@ def closing():
         return render_template('closing.html', original=file_path, closing=filter_path)
 
     return render_template('closing.html')
-#
+
+
 
 
 
