@@ -341,9 +341,10 @@ def erosion():
         file.save(file_path)
         
         img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         kernel = np.ones((5, 5), 'uint8')
-        erosion = cv2.erode(img, kernel, iterations=1)
+        erosion = cv2.erode(gray, kernel, iterations=1)
 
         # Deteksi wajah dan tempelkan kacamata
         result_image = BytesIO()
@@ -371,9 +372,10 @@ def dilatation():
         file.save(file_path)
         
         img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         kernel = np.ones((5, 5), 'uint8')
-        dilate_img = cv2.dilate(img, kernel, iterations=1)
+        dilate_img = cv2.dilate(gray, kernel, iterations=1)
 
         # Deteksi wajah dan tempelkan kacamata
         result_image = BytesIO()
@@ -401,9 +403,10 @@ def opening():
         file.save(file_path)
         
         img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5))
-        opening = cv2.morphologyEx(img,cv2.MORPH_OPEN,kernel)
+        opening = cv2.morphologyEx(gray,cv2.MORPH_OPEN,kernel)
 
         # Deteksi wajah dan tempelkan kacamata
         result_image = BytesIO()
@@ -432,6 +435,7 @@ def closing():
         file.save(file_path)
         
         img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
 
         kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5))
         closing = cv2.morphologyEx(img,cv2.MORPH_CLOSE,kernel)
@@ -447,10 +451,6 @@ def closing():
         return render_template('closing.html', original=file_path, closing=filter_path)
 
     return render_template('closing.html')
-
-
-
-
 
 if __name__ == '__main__': 
     app.run(debug=True,port=8001)
