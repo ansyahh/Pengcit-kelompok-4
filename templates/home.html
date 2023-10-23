@@ -61,7 +61,12 @@
             </a>
             <br>
             <h3 class="text-center font-thin text-white">Morphology</h3>
-
+                <a href="{{ url_for('dilatation') }}">
+                    <button class="button">Dilatation</button>
+                </a>
+                <a href="{{ url_for('erosion') }}">
+                    <button class="button">Erosion</button>
+                </a>
                 <a href="{{ url_for('opening') }}">
                     <button class="button">Opening</button>
                 </a>
