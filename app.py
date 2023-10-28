@@ -490,7 +490,7 @@ def rotation():
         elif degrees in [90, 135]:
             new_height = width
             new_width = height
-            center = (width/1.25, height/1.5)
+            center = (height/1.335, width/2)
             M = cv2.getRotationMatrix2D(center, degrees, 1.0)
             rotated = cv2.warpAffine(img, M, (new_width, new_height))
         else:
