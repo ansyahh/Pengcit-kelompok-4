@@ -541,6 +541,69 @@ def scale():
         return render_template('scale.html', original=file_path, scale=resized_path, width=width/5, height=height/5, new_height=new_height/5, new_width=new_width/5)
     return render_template('scale.html')
 
+@app.route('/bilinear', methods=['GET', 'POST'])
+def linear():
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+
+        img = cv2.imread(file_path, 1)
+        percentage = int(request.form.get('size_value'))
+        if percentage < 0:
+            percentage = 0
+        elif percentage > 200:
+            percentage = 200
+
+        # Hitung ukuran baru berdasarkan persentase
+        new_height = int(img.shape[0] * (percentage / 100))
+        new_width = int(img.shape[1] * (percentage / 100))
+
+        # Resize gambar dengan interpolasi linear
+        linear = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
+
+        # Simpan gambar hasil perubahan skala
+        linear_path = os.path.join(app.config['UPLOAD'], 'linear.png')
+        cv2.imwrite(linear_path, linear)
+
+        return render_template('linear.html', original=file_path, linear=linear_path)
+    return render_template('linear.html')
+
+@app.route('/bicubic', methods=['GET', 'POST'])
+def bicubic():
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+
+        img = cv2.imread(file_path, 1)
+        percentage = int(request.form.get('size_value'))
+        if percentage < 0:
+            percentage = 0
+        elif percentage > 200:
+            percentage = 200
+
+        # Hitung ukuran baru berdasarkan persentase
+        new_height = int(img.shape[0] * (percentage / 100))
+        new_width = int(img.shape[1] * (percentage / 100))
+
+        # Resize gambar dengan interpolasi bicubic
+        bicubic = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
+
+        # Simpan gambar hasil perubahan skala
+        bicubic_path = os.path.join(app.config['UPLOAD'], 'bicubic.png')
+        cv2.imwrite(bicubic_path, bicubic)
+
+        return render_template('bicubic.html', original=file_path, bicubic=bicubic_path)
+    return render_template('bicubic.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=8001)
