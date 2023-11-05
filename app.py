@@ -542,7 +542,7 @@ def scale():
     return render_template('scale.html')
 
 @app.route('/bilinear', methods=['GET', 'POST'])
-def linear():
+def bilinear():
     original_file = None
     filtered_file = None
 
@@ -564,14 +564,15 @@ def linear():
         new_width = int(img.shape[1] * (percentage / 100))
 
         # Resize gambar dengan interpolasi linear
-        linear = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
+        bilinear = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
 
         # Simpan gambar hasil perubahan skala
-        linear_path = os.path.join(app.config['UPLOAD'], 'linear.png')
-        cv2.imwrite(linear_path, linear)
+        bilinear_path = os.path.join(app.config['UPLOAD'], 'bilinear.png')
+        cv2.imwrite(bilinear_path, bilinear)
 
-        return render_template('linear.html', original=file_path, linear=linear_path)
-    return render_template('linear.html')
+        return render_template('bilinear.html', original=file_path, bilinear=bilinear_path)
+
+    return render_template('bilinear.html')
 
 @app.route('/bicubic', methods=['GET', 'POST'])
 def bicubic():
@@ -603,6 +604,7 @@ def bicubic():
         cv2.imwrite(bicubic_path, bicubic)
 
         return render_template('bicubic.html', original=file_path, bicubic=bicubic_path)
+
     return render_template('bicubic.html')
 
 if __name__ == '__main__':
