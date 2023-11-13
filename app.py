@@ -1,3 +1,4 @@
+from io import BytesIO
 from flask import Flask, redirect, render_template, request, url_for, send_file
 import numpy as np
 from werkzeug.utils import secure_filename
@@ -606,6 +607,108 @@ def bicubic():
         return render_template('bicubic.html', original=file_path, bicubic=bicubic_path)
 
     return render_template('bicubic.html')
+
+@app.route('/lowpass', methods=['GET', 'POST'])
+def lowpass():
+
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+
+        img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Ganti kernel dengan Gaussian blur
+        # Anda dapat menyesuaikan nilai (5, 5) sesuai kebutuhan
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+        result_image = BytesIO()
+        plt.imsave(result_image, blurred, format='jpg', cmap=plt.cm.gray)
+        result_image.seek(0)
+        filter_path = os.path.join(app.config['UPLOAD'], 'lowpass.jpg')
+        with open(os.path.join(app.config['UPLOAD'], 'lowpass.jpg'), 'wb') as f:
+            f.write(result_image.read())
+
+        return render_template('lowpass.html', original=file_path, lowpass=filter_path)
+
+    return render_template('lowpass.html')    
+
+@app.route('/median', methods=['GET', 'POST'])
+def median():
+
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+
+        img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Apply Median filter
+        blurred = cv2.medianBlur(gray, 5)
+
+        result_image = BytesIO()
+        plt.imsave(result_image, blurred, format='jpg', cmap=plt.cm.gray)
+        result_image.seek(0)
+        filter_path = os.path.join(app.config['UPLOAD'], 'medaian.jpg')
+        with open(os.path.join(app.config['UPLOAD'], 'median.jpg'), 'wb') as f:
+            f.write(result_image.read())
+
+        return render_template('median.html', original=file_path, median=filter_path)
+
+    return render_template('median.html')    
+
+# @app.route('/median', methods=['GET', 'POST'])
+# def median_filter():
+
+#     original_file = None
+#     median_file = None
+
+#     if request.method == "POST":
+#         from io import BytesIO
+#         file = request.files['img']
+#         filename = secure_filename(file.filename)
+
+#         # Pastikan direktori untuk menyimpan file yang diunggah sudah ada
+#         upload_dir = os.path.join(app.static_folder, 'uploads')
+#         os.makedirs(upload_dir, exist_ok=True)
+
+#         # Pastikan direktori untuk menyimpan hasil filter sudah ada
+#         filter_dir = os.path.join(app.static_folder, 'uploads')
+#         os.makedirs(filter_dir, exist_ok=True)
+
+#         file_path = os.path.join(upload_dir, filename)
+
+#         file.save(file_path)
+
+#         img = cv2.imread(file_path, 1)
+#         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+#         # Apply Median filter
+#         median_filtered = cv2.medianBlur(gray, 5)
+
+#         result_image = BytesIO()
+#         plt.imsave(result_image, median_filtered, format='jpg', cmap=plt.cm.gray)
+#         result_image.seek(0)
+#         median_filename = f'median_{filename}'  # Menggunakan nama file yang berbeda
+#         median_path = os.path.join(filter_dir, median_filename)
+#         with open(median_path, 'wb') as f:
+#             f.write(result_image.read())
+
+#         return render_template('median.html', original=file_path, median=median_path)
+
+#     return render_template('median.html')
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8001)
