@@ -67,30 +67,42 @@
             <a href="{{ url_for('erosion') }}">
                 <button class="button">Erosion</button>
             </a>
-                <a href="{{ url_for('opening') }}">
-                    <button class="button">Opening</button>
-                </a>
-                <a href="{{ url_for('closing') }}">
-                    <button class="button">Closing</button>
-                </a>
-                <br>
-                <h3 class="text-center font-thin text-white">Basic Editing</h3>
-                <a href="{{ url_for('rotation') }}">
-                    <button class="button">Rotation</button>
-                </a>
-                <a href="{{ url_for('scale') }}">
-                    <button class="button">Scale</button>
-                </a>
+            <a href="{{ url_for('opening') }}">
+                <button class="button">Opening</button>
+            </a>
+            <a href="{{ url_for('closing') }}">
+                <button class="button">Closing</button>
+            </a>
+            <br>
+            <h3 class="text-center font-thin text-white">Basic Editing</h3>
+            <a href="{{ url_for('rotation') }}">
+                <button class="button">Rotation</button>
+            </a>
+            <a href="{{ url_for('scale') }}">
+                <button class="button">Scale</button>
+            </a>
 
             <h3 class="text-center font-thin text-white">Interpolasi Citra</h3>
-                <a href="{{ url_for('bilinear') }}">
-                    <button class="button">Bilinear</button>
-                </a>
-                <a href="{{ url_for('bicubic') }}">
-                    <button class="button">Bicubic</button>
-                </a>
-            </div>
-        </dev>
+            <a href="{{ url_for('bilinear') }}">
+                <button class="button">Bilinear</button>
+            </a>
+            <a href="{{ url_for('bicubic') }}">
+                <button class="button">Bicubic</button>
+            </a>
+
+            <h3 class="text-center font-thin text-white">Image Restoration</h3>
+            <a href="{{ url_for('saltnpepper') }}">
+                <button class="button">Salt and Pepper</button>
+            </a>
+            <a href="{{ url_for('rank_order_filtering_route') }}">
+                <button class="button">Rank Ordering</button>
+            </a>
+            <a href="{{ url_for('outlier') }}">
+                <button class="button">Outlier</button>
+            </a>
+
+        </div>
+    </dev>
 </body>
 
 </html>

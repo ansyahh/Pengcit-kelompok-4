@@ -88,7 +88,8 @@
             <h3 class="font-bold text-3xl">Kelompok 4</h3>
         </div>
     </nav>
-        <h1>Interpolasi Citra: Bicubic</h1>
+    <h1>Interpolasi Citra: Bicubic</h1>
+
     <body>
         <form action="/bicubic" method="POST" enctype="multipart/form-data">
             <input type="file" name="img" accept="image/*" required>
@@ -96,17 +97,33 @@
             <input type="number" name="size_value" id="size_value" min="0" max="200" required>
             <button type="submit">Submit</button>
         </form>
-            <div class="output">
+        <div class="output">
             {% if original %}
             <h2>Original Image:</h2>
             <img src="{{ original }}" alt="Original Image">
             {% endif %}
-        
+
             {% if bicubic %}
             <h2>bicubic Interpolation Image:</h2>
-            <img src="{{ bicubic }}" alt="Bicubic Interpolation Image"\>
+            <img src="{{ bicubic }}" alt="Bicubic Interpolation Image" \>
+
+            <div style="margin-left: 100px; overflow: auto;">
+                <h2 class="text-center font-medium text-white">Pixel Matrix (Bicubic)</h2>
+                <table style="border: 2px solid black; border-collapse: collapse;">
+                    {% for row in img2_data[:10] %}
+                    <tr>
+                        {% for pixel in row[:10] %}
+                        <td style="width: 10px; height: 10px; border: 2px solid black; font-size: 20px; padding: 5px;">
+                            {{ pixel }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+
             {% endif %}
         </div>
 
-</body>
+    </body>
+
 </html>

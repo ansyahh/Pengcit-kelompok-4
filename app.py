@@ -1,3 +1,4 @@
+import random
 from flask import Flask, redirect, render_template, request, url_for, send_file
 import numpy as np
 from werkzeug.utils import secure_filename
@@ -5,7 +6,7 @@ import os
 import matplotlib.pyplot as plt
 import cv2
 import rembg
-
+from scipy import ndimage
 app = Flask(__name__)
 
 upload_folder = os.path.join('static', 'uploads')
@@ -541,6 +542,7 @@ def scale():
         return render_template('scale.html', original=file_path, scale=resized_path, width=width/5, height=height/5, new_height=new_height/5, new_width=new_width/5)
     return render_template('scale.html')
 
+
 @app.route('/bilinear', methods=['GET', 'POST'])
 def bilinear():
     original_file = None
@@ -564,15 +566,21 @@ def bilinear():
         new_width = int(img.shape[1] * (percentage / 100))
 
         # Resize gambar dengan interpolasi linear
-        bilinear = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
+        bilinear = cv2.resize(img, (new_width, new_height),
+                              interpolation=cv2.INTER_LINEAR)
 
         # Simpan gambar hasil perubahan skala
         bilinear_path = os.path.join(app.config['UPLOAD'], 'bilinear.png')
         cv2.imwrite(bilinear_path, bilinear)
 
-        return render_template('bilinear.html', original=file_path, bilinear=bilinear_path)
+        # Mode 0 untuk grayscale, 1 untuk RGB
+        img_matrix = cv2.imread(bilinear_path, 0)
+        img_matrix_list = img_matrix.tolist()
+
+        return render_template('bilinear.html', original=file_path, bilinear=bilinear_path, img2_data=img_matrix_list)
 
     return render_template('bilinear.html')
+
 
 @app.route('/bicubic', methods=['GET', 'POST'])
 def bicubic():
@@ -588,24 +596,148 @@ def bicubic():
         img = cv2.imread(file_path, 1)
         percentage = int(request.form.get('size_value'))
         if percentage < 0:
-            percentage = 0
+            percentage = 10
         elif percentage > 200:
             percentage = 200
 
         # Hitung ukuran baru berdasarkan persentase
-        new_height = int(img.shape[0] * (percentage / 100))
+        new_height = int(img.shape[1] * (percentage / 100))
         new_width = int(img.shape[1] * (percentage / 100))
 
         # Resize gambar dengan interpolasi bicubic
-        bicubic = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
+        bicubic = cv2.resize(img, (new_width, new_height),
+                             interpolation=cv2.INTER_CUBIC)
 
         # Simpan gambar hasil perubahan skala
         bicubic_path = os.path.join(app.config['UPLOAD'], 'bicubic.png')
         cv2.imwrite(bicubic_path, bicubic)
 
-        return render_template('bicubic.html', original=file_path, bicubic=bicubic_path)
+        # Mode 0 untuk grayscale, 1 untuk RGB
+        img_matrix = cv2.imread(bicubic_path, 0)
+        img_matrix_list = img_matrix.tolist()
+
+        return render_template('bicubic.html', original=file_path, bicubic=bicubic_path, img2_data=img_matrix_list)
 
     return render_template('bicubic.html')
+
+
+def rank_order_filtering(image, cross):
+
+    # Apply median filtering with the cross-shaped structuring element
+    result_image = ndimage.median_filter(image, footprint=cross)
+
+    return result_image
+
+# INI yang diubah
+
+
+def add_salt_and_pepper_noise(image, salt_prob=0.02, pepper_prob=0.02):
+    noisy_image = np.copy(image)
+
+    if len(image.shape) == 2:  # Grayscale image
+        # Convert to 3 channels for compatibility
+        noisy_image = cv2.cvtColor(noisy_image, cv2.COLOR_GRAY2RGB)
+
+    # Menambahkan noise garam (salt)
+    num_salt = np.ceil(salt_prob * image.size)
+    salt_coords = [np.random.randint(0, i-1, int(num_salt))
+                   for i in image.shape[:2]]
+    noisy_image[salt_coords[0], salt_coords[1], :] = 1
+
+    # Menambahkan noise lada (pepper)
+    num_pepper = np.ceil(pepper_prob * image.size)
+    pepper_coords = [np.random.randint(
+        0, i-1, int(num_pepper)) for i in image.shape[:2]]
+    noisy_image[pepper_coords[0], pepper_coords[1], :] = 0
+
+    return noisy_image
+# SAMPE SINI
+
+
+@app.route('/rank_order_filtering', methods=['GET', 'POST'])
+def rank_order_filtering_route():
+    if request.method == 'POST':
+        # Menerima file gambar yang diunggah oleh pengguna
+        uploaded_image = request.files['img']
+
+        if uploaded_image:
+            # Simpan file gambar yang diunggah ke direktori sementara
+            image_path = 'static/uploaded_image.png'
+            uploaded_image.save(image_path)
+
+            # Baca gambar yang diunggah
+            image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+            # Tambahkan noise salt-and-pepper
+            # noisy_image = add_salt_and_pepper_noise(
+            #     image, salt_prob=0.02, pepper_prob=0.02)
+
+            # Create a cross-shaped structuring element (3x3)
+            cross = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
+
+            # Melakukan operasi rank order filtering pada citra
+            rank_filtered_image = rank_order_filtering(image, cross)
+
+            # Simpan hasil noisy sebagai gambar
+            # noisy_image_path = 'static/noisy_image.png'
+            # cv2.imwrite(noisy_image_path, noisy_image)
+
+            # Simpan hasil rank order filtering sebagai gambar
+            rank_filtered_image_path = 'static/rank_filtered_image.png'
+            cv2.imwrite(rank_filtered_image_path, rank_filtered_image)
+
+            # return render_template('rank_order_filtering.html', original=image_path, noisy_image=noisy_image_path, filtered_image=rank_filtered_image_path)
+            return render_template('rank_order_filtering.html', original=image_path, filtered_image=rank_filtered_image_path)
+
+    # Handle the case when 'uploaded_image' is not present in the POST request
+    return render_template('rank_order_filtering.html')
+
+
+def outlier_method(image, cross):
+
+    # Apply median filtering with the cross-shaped structuring element
+    result_image = ndimage.median_filter(image, footprint=cross)
+
+    return result_image
+
+
+@app.route('/outlier', methods=['GET', 'POST'])
+def outlier():
+    if request.method == 'POST':
+        # Menerima file gambar yang diunggah oleh pengguna
+        uploaded_image = request.files['img']
+
+        if uploaded_image:
+            # Simpan file gambar yang diunggah ke direktori sementara
+            image_path = 'static/uploaded_image.png'
+            uploaded_image.save(image_path)
+
+            # Baca gambar yang diunggah
+            image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+            # Tambahkan noise salt-and-pepper
+            noisy_image = add_salt_and_pepper_noise(
+                image, salt_prob=0.02, pepper_prob=0.02)
+
+            # Create a cross-shaped structuring element (3x3)
+            cross = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]])
+
+            # Melakukan operasi outlier method pada citra
+            outlier_filtered_image = outlier_method(noisy_image, cross)
+
+            # Simpan hasil noisy sebagai gambar
+            noisy_image_path = 'static/noisy_image.png'
+            cv2.imwrite(noisy_image_path, noisy_image)
+
+            # Simpan hasil outlier method sebagai gambar
+            outlier_filtered_image_path = 'static/outlier_filtered_image.png'
+            cv2.imwrite(outlier_filtered_image_path, outlier_filtered_image)
+
+            return render_template('outlier_method.html', original_image=image_path, noisy_image=noisy_image_path, filtered_image=outlier_filtered_image_path)
+
+    # Handle the case when 'uploaded_image' is not present in the POST request
+    return render_template('outlier_method.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=8001)
