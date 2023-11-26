@@ -1,3 +1,5 @@
+import heapq
+from io import BytesIO
 from flask import Flask, redirect, render_template, request, url_for, send_file
 import numpy as np
 from werkzeug.utils import secure_filename
@@ -5,6 +7,7 @@ import os
 import matplotlib.pyplot as plt
 import cv2
 import rembg
+from collections import defaultdict
 
 app = Flask(__name__)
 
@@ -186,6 +189,7 @@ def face_blur():
 
     return render_template('blur.html')
 
+
 def cartoonize_image(image_path, cartoonized_image_path):
     # Baca gambar
     img = cv2.imread(image_path)
@@ -195,7 +199,8 @@ def cartoonize_image(image_path, cartoonized_image_path):
     gray = cv2.medianBlur(gray, 5)
 
     # Deteksi tepi dengan menggunakan operator Canny
-    edges = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 9)
+    edges = cv2.adaptiveThreshold(
+        gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 9)
     # Dilasi pada gambar tepi
     # edges = cv2.dilate(edges, None, iterations=2)
 
@@ -209,6 +214,7 @@ def cartoonize_image(image_path, cartoonized_image_path):
     # Kembalikan path file gambar kartun
     return cartoonized_image_path
 
+
 @app.route('/background_remove', methods=['GET', 'POST'])
 def background_remove():
     if request.method == 'POST':
@@ -221,8 +227,10 @@ def background_remove():
             return render_template('background_remove.html', error='No selected image')
 
         if img_file:
-            input_image_path = os.path.join(app.config['UPLOAD'], 'background_input.png')
-            output_image_path = os.path.join(app.config['UPLOAD'], 'background_output.png')
+            input_image_path = os.path.join(
+                app.config['UPLOAD'], 'background_input.png')
+            output_image_path = os.path.join(
+                app.config['UPLOAD'], 'background_output.png')
 
             img_file.save(input_image_path)
             remove_background(input_image_path, output_image_path)
@@ -236,11 +244,13 @@ def remove_background(input_image_path, output_image_path):
     with open(input_image_path, 'rb') as input_file:
         input_data = input_file.read()
         output_data = rembg.remove(input_data)
-        
+
         with open(output_image_path, 'wb') as output_file:
             output_file.write(output_data)
 
 # Route untuk halaman kartunize
+
+
 @app.route('/cartoonize', methods=['GET', 'POST'])
 def cartoonize():
     if request.method == 'POST':
@@ -257,33 +267,35 @@ def cartoonize():
         cv2.imwrite(gray_image_path, gray)
 
         # Melakukan deteksi tepi menggunakan operator Threshold
-        edges = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 9)
+        edges = cv2.adaptiveThreshold(
+            gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 9, 9)
         edges_image_path = os.path.join(app.config['UPLOAD'], 'edges.jpg')
         cv2.imwrite(edges_image_path, edges)
 
         # Mengaplikasikan efek kartun dengan bitwise_and
         color = cv2.bilateralFilter(img, 9, 250, 250)
         cartoon = cv2.bitwise_and(color, color, mask=edges)
-        cartoon_image_path = os.path.join(app.config['UPLOAD'], 'cartoon_image.jpg')
+        cartoon_image_path = os.path.join(
+            app.config['UPLOAD'], 'cartoon_image.jpg')
         cv2.imwrite(cartoon_image_path, cartoon)
 
         # Mengirim semua hasil gambar ke halaman HTML
-        return render_template('cartoonize.html', 
-                               original=file_path, 
-                               gray=gray_image_path, 
-                               edges=edges_image_path, 
+        return render_template('cartoonize.html',
+                               original=file_path,
+                               gray=gray_image_path,
+                               edges=edges_image_path,
                                cartoon=cartoon_image_path)
     return render_template('cartoonize.html')
 
 
-
-############################################## Tambahan
+# Tambahan
 def detect_and_apply_sticker(image_path):
     # Baca gambar
     img = cv2.imread(image_path)
 
     # Inisialisasi detektor wajah
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    face_cascade = cv2.CascadeClassifier(
+        cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # Deteksi wajah
@@ -293,10 +305,10 @@ def detect_and_apply_sticker(image_path):
     for (x, y, w, h) in faces:
         # Baca gambar kacamata
         sticker = cv2.imread('kacamata.png', -1)
-        
+
         # Sesuaikan ukuran kacamata dengan wajah
         sticker = cv2.resize(sticker, (w, h))
-        
+
         # Tempelkan kacamata pada wajah
         for i in range(sticker.shape[0]):
             for j in range(sticker.shape[1]):
@@ -304,6 +316,7 @@ def detect_and_apply_sticker(image_path):
                     img[y+i, x+j] = sticker[i, j, 0:3]
 
     return img
+
 
 @app.route('/filter_face', methods=['GET', 'POST'])
 def filter_face():
@@ -315,19 +328,19 @@ def filter_face():
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD'], filename)
         file.save(file_path)
-        
+
         # Deteksi wajah dan tempelkan kacamata
         result_image = detect_and_apply_sticker(file_path)
         filter_path = os.path.join(app.config['UPLOAD'], 'filtered.jpg')
         cv2.imwrite(filter_path, result_image)
 
         # original_file = os.path.join(app.config['UPLOAD'], filename)
-        
 
         return render_template('filter_face.html', original=file_path, filtered=filter_path)
     return render_template('filter_face.html')
 
-@app.route('/erosion', methods=['GET','POST'])
+
+@app.route('/erosion', methods=['GET', 'POST'])
 def erosion():
 
     original_file = None
@@ -339,11 +352,12 @@ def erosion():
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD'], filename)
         file.save(file_path)
-        
+
         img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         kernel = np.ones((5, 5), 'uint8')
-        erosion = cv2.erode(img, kernel, iterations=1)
+        erosion = cv2.erode(gray, kernel, iterations=1)
 
         # Deteksi wajah dan tempelkan kacamata
         result_image = BytesIO()
@@ -354,10 +368,11 @@ def erosion():
             f.write(result_image.read())
 
         return render_template('erosion.html', original=file_path, erosion=filter_path)
-    
+
     return render_template('erosion.html')
 
-@app.route('/dilatation', methods=['GET','POST'])
+
+@app.route('/dilatation', methods=['GET', 'POST'])
 def dilatation():
 
     original_file = None
@@ -369,11 +384,12 @@ def dilatation():
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD'], filename)
         file.save(file_path)
-        
+
         img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         kernel = np.ones((5, 5), 'uint8')
-        dilate_img = cv2.dilate(img, kernel, iterations=1)
+        dilate_img = cv2.dilate(gray, kernel, iterations=1)
 
         # Deteksi wajah dan tempelkan kacamata
         result_image = BytesIO()
@@ -384,10 +400,11 @@ def dilatation():
             f.write(result_image.read())
 
         return render_template('dilatation.html', original=file_path, dilatation=filter_path)
-    
+
     return render_template('dilatation.html')
 
-@app.route('/opening', methods=['GET','POST'])
+
+@app.route('/opening', methods=['GET', 'POST'])
 def opening():
 
     original_file = None
@@ -399,11 +416,12 @@ def opening():
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD'], filename)
         file.save(file_path)
-        
-        img = cv2.imread(file_path, 1)
 
-        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5))
-        opening = cv2.morphologyEx(img,cv2.MORPH_OPEN,kernel)
+        img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5))
+        opening = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel)
 
         # Deteksi wajah dan tempelkan kacamata
         result_image = BytesIO()
@@ -418,7 +436,7 @@ def opening():
     return render_template('opening.html')
 
 
-@app.route('/closing', methods=['GET','POST'])
+@app.route('/closing', methods=['GET', 'POST'])
 def closing():
 
     original_file = None
@@ -430,11 +448,12 @@ def closing():
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD'], filename)
         file.save(file_path)
-        
-        img = cv2.imread(file_path, 1)
 
-        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(5,5))
-        closing = cv2.morphologyEx(img,cv2.MORPH_CLOSE,kernel)
+        img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (5, 5))
+        closing = cv2.morphologyEx(gray, cv2.MORPH_CLOSE, kernel)
 
         # Deteksi wajah dan tempelkan kacamata
         result_image = BytesIO()
@@ -449,8 +468,296 @@ def closing():
     return render_template('closing.html')
 
 
+@app.route('/rotation', methods=['GET', 'POST'])
+def rotation():
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        # from io import BytesIO
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+
+        img = cv2.imread(file_path, 1)
+        # gray = cv2.cvtColor(img, 1)
+        height, width = img.shape[:2]
+        degrees = int(request.form['degrees'])
+        if degrees in [225, 270]:
+            new_height = width
+            new_width = height
+            center = (height/2, width/3)
+            M = cv2.getRotationMatrix2D(center, degrees, 1.0)
+            rotated = cv2.warpAffine(img, M, (new_width, new_height))
+        elif degrees in [90, 135]:
+            new_height = width
+            new_width = height
+            center = (height/1.335, width/2)
+            M = cv2.getRotationMatrix2D(center, degrees, 1.0)
+            rotated = cv2.warpAffine(img, M, (new_width, new_height))
+        else:
+            new_height = height
+            new_width = width
+
+            center = (new_width / 2, new_height / 2)
+            M = cv2.getRotationMatrix2D(center, degrees, 1.0)
+            rotated = cv2.warpAffine(img, M, (new_width, new_height))
+
+        # Deteksi wajah dan tempelkan kacamata
+
+        rotated_path = os.path.join(app.config['UPLOAD'], 'rotate.png')
+        cv2.imwrite(rotated_path, rotated)
+        return render_template('rotation.html', original=file_path, rotation=rotated_path)
+    return render_template('rotation.html')
+
+
+@app.route('/scale', methods=['GET', 'POST'])
+def scale():
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        # from io import BytesIO
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+        percentage = int(request.form['size_value'])
+
+        img = cv2.imread(file_path, 1)
+        # gray = cv2.cvtColor(img, 1)
+
+        height, width = img.shape[:2]
+
+        # Hitung ukuran baru berdasarkan persentase
+        new_height = int(height * (percentage / 100))
+        new_width = int(width * (percentage / 100))
+
+        # Resize gambar
+        resized = cv2.resize(img, (new_width, new_height))
+
+        # Deteksi wajah dan tempelkan kacamata
+
+        resized_path = os.path.join(app.config['UPLOAD'], 'resized.png')
+        cv2.imwrite(resized_path, resized)
+        return render_template('scale.html', original=file_path, scale=resized_path, width=width/5, height=height/5, new_height=new_height/5, new_width=new_width/5)
+    return render_template('scale.html')
+
+@app.route('/bilinear', methods=['GET', 'POST'])
+def bilinear():
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+
+        img = cv2.imread(file_path, 1)
+        percentage = int(request.form.get('size_value'))
+        if percentage < 0:
+            percentage = 0
+        elif percentage > 200:
+            percentage = 200
+
+        # Hitung ukuran baru berdasarkan persentase
+        new_height = int(img.shape[0] * (percentage / 100))
+        new_width = int(img.shape[1] * (percentage / 100))
+
+        # Resize gambar dengan interpolasi linear
+        bilinear = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
+
+        # Simpan gambar hasil perubahan skala
+        bilinear_path = os.path.join(app.config['UPLOAD'], 'bilinear.png')
+        cv2.imwrite(bilinear_path, bilinear)
+
+        return render_template('bilinear.html', original=file_path, bilinear=bilinear_path)
+
+    return render_template('bilinear.html')
+
+@app.route('/bicubic', methods=['GET', 'POST'])
+def bicubic():
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+
+        img = cv2.imread(file_path, 1)
+        percentage = int(request.form.get('size_value'))
+        if percentage < 0:
+            percentage = 0
+        elif percentage > 200:
+            percentage = 200
+
+        # Hitung ukuran baru berdasarkan persentase
+        new_height = int(img.shape[0] * (percentage / 100))
+        new_width = int(img.shape[1] * (percentage / 100))
+
+        # Resize gambar dengan interpolasi bicubic
+        bicubic = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_CUBIC)
+
+        # Simpan gambar hasil perubahan skala
+        bicubic_path = os.path.join(app.config['UPLOAD'], 'bicubic.png')
+        cv2.imwrite(bicubic_path, bicubic)
+
+        return render_template('bicubic.html', original=file_path, bicubic=bicubic_path)
+
+    return render_template('bicubic.html')
+
+@app.route('/lowpass', methods=['GET', 'POST'])
+def lowpass():
+
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+
+        img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Ganti kernel dengan Gaussian blur
+        # Anda dapat menyesuaikan nilai (5, 5) sesuai kebutuhan
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+
+        result_image = BytesIO()
+        plt.imsave(result_image, blurred, format='jpg', cmap=plt.cm.gray)
+        result_image.seek(0)
+        filter_path = os.path.join(app.config['UPLOAD'], 'lowpass.jpg')
+        with open(os.path.join(app.config['UPLOAD'], 'lowpass.jpg'), 'wb') as f:
+            f.write(result_image.read())
+
+        return render_template('lowpass.html', original=file_path, lowpass=filter_path)
+
+    return render_template('lowpass.html')    
+
+@app.route('/median', methods=['GET', 'POST'])
+def median():
+
+    original_file = None
+    filtered_file = None
+
+    if request.method == "POST":
+        file = request.files['img']
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD'], filename)
+        file.save(file_path)
+
+        img = cv2.imread(file_path, 1)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+        # Apply Median filter
+        blurred = cv2.medianBlur(gray, 5)
+
+        result_image = BytesIO()
+        plt.imsave(result_image, blurred, format='jpg', cmap=plt.cm.gray)
+        result_image.seek(0)
+        filter_path = os.path.join(app.config['UPLOAD'], 'medaian.jpg')
+        with open(os.path.join(app.config['UPLOAD'], 'median.jpg'), 'wb') as f:
+            f.write(result_image.read())
+
+        return render_template('median.html', original=file_path, median=filter_path)
+
+    return render_template('median.html')
+
+# A class used to implement a Binary Tree consisting of Nodes!
+class Node(object):
+    left = None
+    right = None
+    item = None
+    weight = 0
+
+    def __init__(self, symbol, weight, l=None, r=None):
+        self.symbol = symbol
+        self.weight = weight
+        self.left = l
+        self.right = r
+
+    # Called when outputting/printing the node
+    def __repr__(self):
+        return '("%s", %s, %s, %s)' % (self.symbol, self.weight, self.left, self.right)
+
+def sortByWeight(node):    
+    return (node.weight * 1000000 + ord(node.symbol[0]))  # Sort by weight and alphabetical order if same weight
+
+# A Class used to apply the Huffman Coding algorithm to encode / compress a message
+class HuffmanEncoder:
+    def __init__(self):
+        self.symbols = {}
+        self.codes = {}
+        self.tree = []
+        self.message = ""
+
+    def frequencyAnalysis(self):
+        self.symbols = {}
+        for symbol in self.message:
+            self.symbols[symbol] = self.symbols.get(symbol, 0) + 1
+
+    def preorder_traverse(self, node, path=""):
+        if node.left == None:
+            self.codes[node.symbol] = path
+        else:
+            self.preorder_traverse(node.left, path + "0")
+            self.preorder_traverse(node.right, path + "1")
+
+    def encode(self, message):
+        self.message = message
+        # Identify the list of symbols and their weights / frequency in the message
+        self.frequencyAnalysis()
+
+        # Convert list of symbols into a binary Tree structure
+        # Step 1: Generate list of Nodes...
+        self.tree = []
+        for symbol in self.symbols.keys():
+            self.tree.append(Node(symbol, self.symbols[symbol], None, None))
+
+        # Step 2: Sort list of nodes per weight
+        self.tree.sort(key=sortByWeight)
+
+        # Step 3: Organize all nodes into a Binary Tree.
+        while len(self.tree) > 1:  # Carry on till the tree has only one root node!
+            leftNode = self.tree.pop(0)
+            rightNode = self.tree.pop(0)
+            newNode = Node(leftNode.symbol + rightNode.symbol, leftNode.weight + rightNode.weight, leftNode, rightNode)
+            self.tree.append(newNode)
+            self.tree.sort(key=sortByWeight)
+
+        # Generate List of Huffman Code for each symbol used...
+        self.codes = {}
+        self.preorder_traverse(self.tree[0])
+
+        # Encode Message:
+        encodedMessage = ""
+        for symbol in message:
+            encodedMessage = encodedMessage + self.codes[symbol]
+
+        return encodedMessage
+
+@app.route('/huffman', methods=['GET', 'POST'])
+def huffman():
+    result = None
+
+    if request.method == 'POST':
+        message = request.form['message']
+        encoder = HuffmanEncoder()
+        compressedMessage = encoder.encode(message)
+        result = {"message": message, "compressedMessage": compressedMessage}
+
+        return render_template('huffman.html', result=result)
+
+    return render_template('huffman.html')
 
 
 
-if __name__ == '__main__': 
-    app.run(debug=True,port=8001)
+
+if __name__ == '__main__':
+    app.run(debug=True, port=8001)

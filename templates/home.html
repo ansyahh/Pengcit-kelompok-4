@@ -61,15 +61,50 @@
             </a>
             <br>
             <h3 class="text-center font-thin text-white">Morphology</h3>
-
+            <a href="{{ url_for('dilatation') }}">
+                <button class="button">Dilatation</button>
+            </a>
+            <a href="{{ url_for('erosion') }}">
+                <button class="button">Erosion</button>
+            </a>
                 <a href="{{ url_for('opening') }}">
                     <button class="button">Opening</button>
                 </a>
                 <a href="{{ url_for('closing') }}">
                     <button class="button">Closing</button>
                 </a>
-        </div>
-    </dev>
+                <br>
+                <h3 class="text-center font-thin text-white">Basic Editing</h3>
+                <a href="{{ url_for('rotation') }}">
+                    <button class="button">Rotation</button>
+                </a>
+                <a href="{{ url_for('scale') }}">
+                    <button class="button">Scale</button>
+                </a>
+
+            <h3 class="text-center font-thin text-white">Interpolasi Citra</h3>
+                <a href="{{ url_for('bilinear') }}">
+                    <button class="button">Bilinear</button>
+                </a>
+                <a href="{{ url_for('bicubic') }}">
+                    <button class="button">Bicubic</button>
+                </a>
+
+                <h3 class="text-center font-thin text-white">Cleaning Salt and Pepper</h3>
+                <a href="{{ url_for('lowpass') }}">
+                    <button class="button">Lowpass Filtering</button>
+                </a>
+                <a href="{{ url_for('median') }}">
+                    <button class="button">Median Filtering</button>
+                </a>
+<!-- Tambahkan bagian ini di dalam tag <div class="text-center"> -->
+            <h3 class="text-center font-thin text-white">Huffman Coding</h3>
+                <a href="{{ url_for('huffman') }}">
+                    <button class="button">Huffman Coding</button>
+                </a>
+    
+            </div>
+        </dev>
 </body>
 
 </html>
